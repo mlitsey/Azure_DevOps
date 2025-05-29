@@ -340,7 +340,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     node_count          = 1
     vm_size             = "Standard_D2s_v3"
     vnet_subnet_id      = azurerm_subnet.aks.id
-    enable_auto_scaling = true
+    #enable_auto_scaling = true
     min_count           = 1
     max_count           = 10
   }
@@ -349,7 +349,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     network_plugin     = "azure"
     dns_service_ip     = "10.0.64.10"
     service_cidr       = "10.0.64.0/19"
-    docker_bridge_cidr = "172.17.0.1/16"
+    #docker_bridge_cidr = "172.17.0.1/16"
   }
 
   identity {

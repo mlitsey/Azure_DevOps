@@ -8,6 +8,8 @@ I'll create a comprehensive Terraform configuration for Azure that includes all 
 
 Azure Infrastructure with Ansible, GitLab CE, and AKS Cluster
 
+[Code](./claude-azure-terraform-config.tf)
+
 This Terraform configuration creates a complete Azure environment with all your requested components:
 
 1. **Resource Group**: Named "example" as requested
