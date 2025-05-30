@@ -1,5 +1,3 @@
-# Azure Bicep Resource Manager
-
 # Build your first Bicep template
 [Link](https://learn.microsoft.com/en-us/training/modules/build-first-bicep-template/?source=learn)
 
