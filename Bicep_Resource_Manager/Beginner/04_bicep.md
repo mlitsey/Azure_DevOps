@@ -771,3 +771,73 @@ Azure PowerShell
 
 
 # Module Assessment
+
+Consider the following two Bicep files.
+
+_main.bicep_:
+```bicep
+module storage1 'modules/stor.bicep' = {
+  name: 'my-storage'
+}
+```
+
+_modules/stor.bicep_:
+```bicep
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+  name: 'mystorageaccount'
+  location: resourceGroup().location
+  kind: 'StorageV2'
+  sku: {
+    name: 'Premium_LRS'
+  }
+}
+```
+
+1.
+
+You deploy the _main.bicep_ file with the default settings, then open the Azure portal and look at the deployment history for the resource group. What do you see?
+
+A single deployment named `main`.
+
+Two deployments: one is named `main` and the other is named `storage1`.
+
+Two deployments: one is named `main` and the other is named `my-storage`.
+
+Correct
+
+2.
+
+You plan to update the _main.bicep_ file to add another resource. The new resource needs access to the key of the storage account created in the module. What should you do?
+
+Create an output in the module and set its value to the storage account's connection string.
+
+Use a key vault to create a secret.
+
+Correct
+
+You don't need to do anything. Properties for all the resources defined in the module are automatically available to the parent template.
+
+3.
+
+Your colleague has created a large Bicep file that you want to decompose into modules. You want to identify the resources that should be defined together in each module. Which tool can you consider using to help you achieve this task?
+
+Use the Bicep visualizer.
+
+Correct
+
+Use the Bicep linter.
+
+Use the Azure documentation for ARM templates.
+
+# Summary
+
+Your company's new toy wombat is a success. However, the large amount of traffic to the website was causing performance problems and customer complaints. You needed to add a content delivery network, or CDN, to the website to help it better support the load. You wanted to do this in a reusable and composable way, because you knew that other websites and other projects in your company would also need a CDN in the future.
+
+In this module, you learned how to create and use Bicep modules to make your Bicep code reusable, better structured, and composable. You learned about the importance of creating good parameters and outputs for your modules to ensure that they're easy to chain together and compose into other templates, or even other modules. You also learned how conditions can help add flexibility to your modules.
+
+Now, you can easily add a CDN into any of the websites that you create, whether or not they're deployed from your website's main template. You can even use the template as a module in another deployment.
+
+## Learn more
+
+-   [Bicep modules](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/modules)
+
