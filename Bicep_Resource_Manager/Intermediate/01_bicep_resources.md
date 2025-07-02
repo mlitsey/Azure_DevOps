@@ -1089,3 +1089,102 @@ Bicep Code
 
 If it doesn't look the same, either copy the example or adjust your template to match the example.
 
+## Deploy the template to Azure
+
+In the terminal, run the following Azure CLI command. Replace `{storageaccountname}` with the name of the storage account that you created earlier in this exercise.
+
+Azure CLI Code
+```bash
+    az deployment group create \
+      --name main \
+      --template-file main.bicep \
+      --parameters storageAccountName={storageaccountname}
+```    
+
+In the terminal, run the following Azure PowerShell command. Replace `{storageaccountname}` with the name of the storage account that you created earlier in this exercise.
+
+Azure PowerShell Code
+```ps1
+    New-AzResourceGroupDeployment `
+      -Name main `
+      -TemplateFile main.bicep `
+      -storageAccountName {storageaccountname}
+```    
+
+### Check your deployment
+
+1.  In your browser, go back to the Azure portal. Go to your resource group. Because the deployment used the same name as the first deployment, you still see one successful deployment.
+    
+2.  Select the **1 Succeeded** link.
+    
+3.  Select the deployment called **main**, and then select **Deployment details** to expand the list of deployed resources.
+    
+    ![Screenshot of the Azure portal interface for the specific deployment. It shows the Azure Cosmos DB resources and two resources of type Microsoft.Insights/diagnosticSettings.](https://learn.microsoft.com/en-us/training/modules/child-extension-bicep-templates/media/7-deployment-details.png)
+    
+    Notice that there are two resources listed that have a type of `Microsoft.Insights/diagnosticSettings`. These resources are the extension resources you deployed. One of the resources is attached to the storage account and the other is attached to the Azure Cosmos DB account. You can now verify that the Azure Cosmos DB diagnostic settings are configured correctly.
+    
+4.  Select the Azure Cosmos DB account resource. The portal displays the Azure Cosmos DB account.
+    
+    ![Screenshot of the Azure portal interface for the specific deployment, with the Azure Cosmos DB account highlighted.](https://learn.microsoft.com/en-us/training/modules/child-extension-bicep-templates/media/7-deployment-details-cosmos-db-selected.png)
+    
+5.  In the **Search** box at the top left, enter _Diagnostic settings_, and then select **Diagnostic settings**.
+    
+    ![Screenshot of the Azure portal interface for the Azure Cosmos DB account. Diagnostic settings is highlighted in the menu.](https://learn.microsoft.com/en-us/training/modules/child-extension-bicep-templates/media/7-cosmos-db-search.png)
+    
+6.  The Azure portal might prompt you to enable full-text query support for logging. You don't need it for this exercise, so select **Not now**.
+    
+    ![Screenshot of the prompt to enable full-text query.](https://learn.microsoft.com/en-us/training/modules/child-extension-bicep-templates/media/7-cosmos-db-enable-full-text-query.png)
+    
+7.  Notice that there's a diagnostic setting named **route-logs-to-log-analytics** that's configured to route the logs to the **ToyLogs** workspace.
+    
+    ![Screenshot that shows the diagnostic settings.](https://learn.microsoft.com/en-us/training/modules/child-extension-bicep-templates/media/7-cosmos-db-diagnostic-settings.png)
+    
+    If you want, you can also verify that the storage account has a similar diagnostic setting enabled for blob storage.
+
+# Module assessment
+
+1. 
+
+Your R&D team asked you to deploy an Azure SQL database so they can compare it to Azure Cosmos DB. An SQL database is a child resource of the Azure SQL logical server resource. Which of these statements is true?
+
+- The SQL database resource might be in a different resource provider than its parent.
+
+- -> You can use the `parent` property to inform Bicep about the relationship between the parent and child resources.
+
+- An Azure SQL logical server instance is an implicit resource.
+
+2. 
+
+You're asked to deploy an extension resource with the type `Microsoft.Authorization/roleAssignments`. Which of these approaches should you consider?
+
+- -> Use the `scope` property on a resource definition.
+
+- Use the `parent` property on a resource definition.
+
+- Use a nested resource declaration.
+
+3. 
+
+Which of these statements is true?
+
+- When you use the `existing` keyword on a resource declaration, Bicep redeploys the resource.
+
+- All resource definitions in a Bicep file need to have an SKU property set, even existing resources.
+
+- -> You can access the properties of existing resources by using the resource's symbolic name.
+
+
+# Summary
+
+Your R&D team needed a new Azure Cosmos DB database to store the data it collects when it tests the new drone it's developing. The team asked you to make sure that all successful attempts to access the data are logged. The team also wanted you to log access to another storage account that it already created for storing design documents.
+
+By using Bicep, you were able to create a template with child resources. You used the template to create an Azure Cosmos DB account, database, and container. You used extension resources to configure the diagnostics settings for the Azure Cosmos DB account and send its logs to a Log Analytics workspace. You also used the `existing` keyword so that you could add diagnostics settings to the R&D team's storage account.
+
+Creating comprehensive and powerful Bicep templates requires you to understand child and extension resources. Without using these features of the Bicep language, you would be limited in what you could model in your infrastructure-as-code templates.
+
+## Learn more
+
+-   [Child resources](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/child-resource-name-type)
+-   [Extension resources](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/scope-extension-resources)
+-   [Extension resource types](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/extension-resource-types)
+
