@@ -60,6 +60,9 @@ resource rotationPolicy 'Microsoft.KeyVault/vaults/keys/rotationPolicy@2023-02-0
 resource des 'Microsoft.Compute/diskEncryptionSets@2023-03-01' = {
   name: name
   location: location
+  dependsOn: [
+    keyVault
+  ]
   identity: {
     type: 'SystemAssigned'
   }
@@ -76,7 +79,8 @@ resource des 'Microsoft.Compute/diskEncryptionSets@2023-03-01' = {
 
 // Key Vault access policy to allow DES to access CMK
 resource desAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2023-02-01' = {
-  name: '${keyVault.name}/add'
+  parent: keyVault
+  name: 'add'
   properties: {
     accessPolicies: [
       {
@@ -92,9 +96,9 @@ resource desAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2023-02-01' =
       }
     ]
   }
-  dependsOn: [
-    des
-  ]
+  //dependsOn: [
+  //  des
+  //]
 }
 
 
