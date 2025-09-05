@@ -32,9 +32,23 @@ variable "location" {
   default     = "eastus"
 }
 
-variable "subnet_id" {
-  description = "Existing subnet resource ID"
+# variable "subnet_id" {
+#   description = "Existing subnet resource ID"
+#   type        = string
+#   default = "default"
+# }
+
+variable "vnet_name" {
+  description = "virtual network name"
   type        = string
+  default = "test-vnet"
+}
+
+
+variable "subnet_name" {
+  description = "subnet name"
+  type        = string
+  default = "default"
 }
 
 variable "create_public_ip" {
@@ -58,6 +72,7 @@ variable "admin_password" {
 variable "admin_ssh_public_key" {
   description = "SSH public key"
   type        = string
+  default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNqvMY8Ws7XjxwfLQahKIYJZYebHXDOOultQZhf1xRX mlitsey@DESKTOP-G2CISOE"
 }
 
 variable "vm_size" {
@@ -69,7 +84,7 @@ variable "vm_size" {
 variable "disk_count" {
   description = "How many data disks to attach"
   type        = number
-  default     = 16
+  default     = 14
 }
 
 variable "disk_size_gib" {
@@ -94,7 +109,8 @@ variable "ultra_ssd_enabled" {
 # Resource Group
 # -------------------------
 resource "azurerm_resource_group" "rg" {
-  name     = "${var.name}-rg"
+  #name     = "${var.name}-rg"
+  name     = "work-test"
   location = var.location
 }
 
@@ -128,16 +144,31 @@ resource "azurerm_network_security_group" "nsg" {
   }
 }
 
+resource "azurerm_virtual_network" "vnet" {
+  name = var.vnet_name
+  address_space = [ "10.0.0.0/16" ]
+  location = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
+resource "azurerm_subnet" "subnet" {
+  name = var.subnet_name
+  resource_group_name = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes = [ "10.0.0.0/24" ]
+}
+
 resource "azurerm_network_interface" "nic" {
   name                = "${var.name}-nic"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
-
-  enable_accelerated_networking = true
+  auxiliary_mode = "AccelerateConnections"
+  accelerated_networking_enabled = true
 
   ip_configuration {
     name                          = "ipconfig1"
-    subnet_id                     = var.subnet_id
+    #subnet_id                     = var.subnet_id
+    subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = var.create_public_ip ? azurerm_public_ip.pip[0].id : null
   }
