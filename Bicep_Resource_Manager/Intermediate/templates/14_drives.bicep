@@ -25,7 +25,11 @@ param adminPassword string
 param adminSshPublicKey string = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNqvMY8Ws7XjxwfLQahKIYJZYebHXDOOultQZhf1xRX mlitsey@DESKTOP-G2CISOE'
 
 @description('VM size (ensure it supports your disk count/perf needs)')
-param vmSize string = 'Standard_D8alds_v6'
+@allowed( [
+  'Standard_D8alds_v6'
+  'Standard_D8s_v6'
+])
+param vmSize string = 'Standard_D8s_v6'
 
 @description('How many data disks to attach')
 @minValue(1)
@@ -84,7 +88,7 @@ resource nic 'Microsoft.Network/networkInterfaces@2023-11-01' = {
 
 // Data disks (managed)
 resource dataDisks 'Microsoft.Compute/disks@2023-04-02' = [for i in range(2, diskCount): {
-  name: '${name}-data-${i}'
+  name: '${name}-data-${(i)}'
   location: location
   sku: {
     name: dataDiskSku
@@ -138,17 +142,17 @@ resource vm 'Microsoft.Compute/virtualMachines@2023-09-01' = {
       osDisk: {
         createOption: 'FromImage'
         caching: 'ReadWrite'
-        diskSizeGB: 30
+        diskSizeGB: 64
         managedDisk: {
           storageAccountType: 'Premium_LRS'
         }
       }
-      dataDisks: [for i in range(2, diskCount): {
-        lun: i
-        name: dataDisks[i].name
+      dataDisks: [for j in range(0, diskCount): {
+        lun: (j + 2)
+        name: dataDisks[j].name
         createOption: 'Attach'
         managedDisk: {
-          id: dataDisks[i].id
+          id: dataDisks[j].id
         }
         caching: 'None' // often best for data disks; change to ReadWrite if needed
       }]
