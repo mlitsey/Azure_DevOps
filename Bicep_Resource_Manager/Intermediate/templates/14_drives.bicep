@@ -30,7 +30,7 @@ param vmSize string = 'Standard_D8alds_v6'
 @description('How many data disks to attach')
 @minValue(1)
 @maxValue(32)
-param diskCount int = 14
+param diskCount int = 16
 
 @description('Size of each data disk in GiB')
 @minValue(4)
@@ -83,7 +83,7 @@ resource nic 'Microsoft.Network/networkInterfaces@2023-11-01' = {
 }
 
 // Data disks (managed)
-resource dataDisks 'Microsoft.Compute/disks@2023-04-02' = [for i in range(0, diskCount): {
+resource dataDisks 'Microsoft.Compute/disks@2023-04-02' = [for i in range(2, diskCount): {
   name: '${name}-data-${i}'
   location: location
   sku: {
@@ -143,7 +143,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2023-09-01' = {
           storageAccountType: 'Premium_LRS'
         }
       }
-      dataDisks: [for i in range(0, diskCount): {
+      dataDisks: [for i in range(2, diskCount): {
         lun: i
         name: dataDisks[i].name
         createOption: 'Attach'
