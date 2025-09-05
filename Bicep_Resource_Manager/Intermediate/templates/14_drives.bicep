@@ -9,10 +9,10 @@ param hostName string = 'testvm'
 param location string = resourceGroup().location
 
 @description('Existing subnet resource ID to place the NIC in')
-param subnetId string
+param subnetId string = '/subscriptions/b80bca1c-8674-4916-831b-1982e1866120/resourceGroups/work-test/providers/Microsoft.Network/virtualNetworks/test-vnet/subnets/default'
 
 @description('Create a public IP for the VM')
-param createPublicIP bool = false
+param createPublicIP bool = true
 
 @description('Admin username for the VM')
 param adminUsername string = 'azureuser'
@@ -20,12 +20,12 @@ param adminUsername string = 'azureuser'
 @secure()
 param adminPassword string
 
-// @description('SSH public key (e.g. contents of ~/.ssh/id_rsa.pub)')
-// @secure()
-// param adminSshPublicKey string
+@description('SSH public key (e.g. contents of ~/.ssh/id_rsa.pub)')
+//@secure()
+param adminSshPublicKey string = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNqvMY8Ws7XjxwfLQahKIYJZYebHXDOOultQZhf1xRX mlitsey@DESKTOP-G2CISOE'
 
 @description('VM size (ensure it supports your disk count/perf needs)')
-param vmSize string = 'Standard_D8s_v5'
+param vmSize string = 'Standard_D8alds_v6'
 
 @description('How many data disks to attach')
 @minValue(1)
@@ -34,7 +34,7 @@ param diskCount int = 14
 
 @description('Size of each data disk in GiB')
 @minValue(4)
-param diskSizeGiB int = 128
+param diskSizeGiB int = 4
 
 @description('Managed disk SKU for data disks. Premium SSD v2 is NVMe-backed.')
 @allowed([
@@ -95,13 +95,16 @@ resource dataDisks 'Microsoft.Compute/disks@2023-04-02' = [for i in range(0, dis
     }
     diskSizeGB: diskSizeGiB
   }
+  zones: [
+    '1'
+  ]
 }]
 
 // VM
 resource vm 'Microsoft.Compute/virtualMachines@2023-09-01' = {
   name: name
   location: location
-  zones: [] // optional: specify ['1'] | ['2'] | ['3'] if you want a zone
+  zones: ['1'] // optional: specify ['1'] | ['2'] | ['3'] if you want a zone
   properties: {
     hardwareProfile: {
       vmSize: vmSize
@@ -114,27 +117,28 @@ resource vm 'Microsoft.Compute/virtualMachines@2023-09-01' = {
       adminUsername: adminUsername
       adminPassword: adminPassword
       linuxConfiguration: {
-      //   disablePasswordAuthentication: true
-      //   ssh: {
-      //     publicKeys: [
-      //       {
-      //         path: '/home/${adminUsername}/.ssh/authorized_keys'
-      //         keyData: adminSshPublicKey
-      //       }
-      //     ]
-      //   }
+        disablePasswordAuthentication: false
+        ssh: {
+          publicKeys: [
+            {
+              path: '/home/${adminUsername}/.ssh/authorized_keys'
+              keyData: adminSshPublicKey
+            }
+          ]
+        }
       }
     }
     storageProfile: {
       imageReference: {
         publisher: 'RedHat'
         offer: 'RHEL'
-        sku: '9-lvm'
+        sku: '9-lvm-gen2'
         version: 'latest'
       }
       osDisk: {
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        diskSizeGB: 30
         managedDisk: {
           storageAccountType: 'Premium_LRS'
         }
@@ -146,8 +150,9 @@ resource vm 'Microsoft.Compute/virtualMachines@2023-09-01' = {
         managedDisk: {
           id: dataDisks[i].id
         }
-        caching: 'ReadOnly' // often best for data disks; change to ReadWrite if needed
+        caching: 'None' // often best for data disks; change to ReadWrite if needed
       }]
+      diskControllerType: 'NVMe'
     }
     networkProfile: {
       networkInterfaces: [
