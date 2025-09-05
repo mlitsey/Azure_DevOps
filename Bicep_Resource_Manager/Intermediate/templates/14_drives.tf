@@ -91,6 +91,14 @@ variable "ultra_ssd_enabled" {
 }
 
 # -------------------------
+# Resource Group
+# -------------------------
+resource "azurerm_resource_group" "rg" {
+  name     = "${var.name}-rg"
+  location = var.location
+}
+
+# -------------------------
 # Networking
 # -------------------------
 resource "azurerm_public_ip" "pip" {
@@ -100,6 +108,24 @@ resource "azurerm_public_ip" "pip" {
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Static"
   sku                 = "Standard"
+}
+
+resource "azurerm_network_security_group" "nsg" {
+  name                = "${var.name}-nsg"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  security_rule {
+    name                       = "SSH"
+    priority                   = 1000
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -115,6 +141,11 @@ resource "azurerm_network_interface" "nic" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = var.create_public_ip ? azurerm_public_ip.pip[0].id : null
   }
+}
+
+resource "azurerm_network_interface_security_group_association" "nic_nsg" {
+  network_interface_id      = azurerm_network_interface.nic.id
+  network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
 # -------------------------
